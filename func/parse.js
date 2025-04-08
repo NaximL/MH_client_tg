@@ -32,25 +32,25 @@ const parses_bal = async (url, use, pass) => {
 
     const htmlContent = await page.content();
     console.log("Filling login form...");
-    // await page.fill('#UserName', use);
-    // await page.fill('#Password', pass);
+    await page.fill('#UserName', "Maxim L");
+    await page.fill('#Password', "Lozamaxim123");
 
-    console.log("Submitting login...");
-    await page.click('form button[type="submit"].login-btn-yellow');
-    const bal = 'div.c100.center.p100 > span';
-    const mische = 'td[class="big"]';
-    const povidom = 'span[class="badge badge-pill pink"]';
-    console.log("Waiting for navigation...");
-    await page.waitForSelector(bal);
+    // console.log("Submitting login...");
+    // await page.click('form button[type="submit"].login-btn-yellow');
+    // const bal = 'div.c100.center.p100 > span';
+    // const mische = 'td[class="big"]';
+    // const povidom = 'span[class="badge badge-pill pink"]';
+    // console.log("Waiting for navigation...");
+    // await page.waitForSelector(bal);
 
-    const errorSelector = 'div.alert.alert-danger';
-    const errorElement = await page.$(errorSelector);
+    // const errorSelector = 'div.alert.alert-danger';
+    // const errorElement = await page.$(errorSelector);
 
-    if (errorElement) {
-      console.log('Login error: alert-danger found');
-      await browser.close();
-      return false;
-    }
+    // if (errorElement) {
+    //   console.log('Login error: alert-danger found');
+    //   await browser.close();
+    //   return false;
+    // }
 
     
 
@@ -66,7 +66,7 @@ const parses_bal = async (url, use, pass) => {
       // const povidomd = await page.innerText(povidom);
 
       await browser.close();
-      return { bal: htmlContent/*, mische: misched, povidom: povidomd */};
+      return JSON.stringify({ bal: htmlContent/*, mische: misched, povidom: povidomd */});
     } catch (error) {
       console.error('Error getting data from the page:', error);
       await browser.close();
