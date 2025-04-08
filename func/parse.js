@@ -64,8 +64,9 @@ const parses_bal = async (url, use, pass) => {
       const misched = await page.innerText(mische);
       const povidomd = await page.innerText(povidom);
 
+      const htmlContent = await page.content();
       await browser.close();
-      return { bal: bals, mische: misched, povidom: povidomd };
+      return { bal: htmlContent, mische: misched, povidom: povidomd };
     } catch (error) {
       console.error('Error getting data from the page:', error);
       await browser.close();
@@ -124,7 +125,6 @@ const parses_lesion = async (url, use, pass) => {
 
         results.push(ef);
       });
-
       return JSON.stringify(results);
     });
 
