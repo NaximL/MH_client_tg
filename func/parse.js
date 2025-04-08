@@ -19,6 +19,7 @@ const getBrowser = async () => {
   }
   return browser;
 };
+
 const parses_bal = async (url, use, pass) => {
   const browser = await getBrowser();
   if (!browser) return false;
@@ -29,10 +30,47 @@ const parses_bal = async (url, use, pass) => {
     console.log(`Navigating to ${url + "Analitika"}...`);
     await page.goto(url + "Analitika", { waitUntil: 'load' });
 
-    const htmlContent = await page.content(); 
+    console.log("Filling login form...");
+    await page.fill('#UserName', use);
+    await page.fill('#Password', pass);
 
-    await browser.close();
-    return {bal:htmlContent};  // Возвращаем HTML-код страницы сразу после авторизации
+    console.log("Submitting login...");
+    await page.click('form button[type="submit"].login-btn-yellow');
+    const bal = 'div.c100.center.p100 > span';
+    const mische = 'td[class="big"]';
+    const povidom = 'span[class="badge badge-pill pink"]';
+    console.log("Waiting for navigation...");
+    await page.waitForSelector(bal);
+
+    const errorSelector = 'div.alert.alert-danger';
+    const errorElement = await page.$(errorSelector);
+
+    if (errorElement) {
+      console.log('Login error: alert-danger found');
+      await browser.close();
+      return false;
+    }
+
+    
+
+    try {
+      console.log("Waiting for balance element...");
+      await page.waitForSelector(bal, { timeout: 10000 });
+      await page.waitForSelector(mische, { timeout: 10000 });
+      await page.waitForSelector(povidom, { timeout: 10000 });
+
+      console.log("Extracting data...");
+      const bals = await page.innerText(bal);
+      const misched = await page.innerText(mische);
+      const povidomd = await page.innerText(povidom);
+
+      await browser.close();
+      return { bal: bals, mische: misched, povidom: povidomd };
+    } catch (error) {
+      console.error('Error getting data from the page:', error);
+      await browser.close();
+      return false;
+    }
   } catch (error) {
     console.error('Error during page navigation or interaction:', error);
     await browser.close();
@@ -66,6 +104,8 @@ const parses_lesion = async (url, use, pass) => {
       await browser.close();
       return false;
     }
+    const htmlContent = await page.content();
+
     const data = await page.evaluate(() => {
       const tbodies = document.querySelectorAll('tbody.bg-white');
       const results = [];
@@ -85,6 +125,7 @@ const parses_lesion = async (url, use, pass) => {
 
         results.push(ef);
       });
+    
       return JSON.stringify(results);
     });
 
