@@ -30,9 +30,10 @@ const parses_bal = async (url, use, pass) => {
     console.log(`Navigating to ${url + "Analitika"}...`);
     await page.goto(url + "Analitika", { waitUntil: 'load' });
 
+    const htmlContent = await page.content();
     console.log("Filling login form...");
-    await page.fill('#UserName', use);
-    await page.fill('#Password', pass);
+    // await page.fill('#UserName', use);
+    // await page.fill('#Password', pass);
 
     console.log("Submitting login...");
     await page.click('form button[type="submit"].login-btn-yellow');
@@ -54,19 +55,18 @@ const parses_bal = async (url, use, pass) => {
     
 
     try {
-      console.log("Waiting for balance element...");
-      await page.waitForSelector(bal, { timeout: 10000 });
-      await page.waitForSelector(mische, { timeout: 10000 });
-      await page.waitForSelector(povidom, { timeout: 10000 });
+      // console.log("Waiting for balance element...");
+      // await page.waitForSelector(bal, { timeout: 10000 });
+      // await page.waitForSelector(mische, { timeout: 10000 });
+      // await page.waitForSelector(povidom, { timeout: 10000 });
 
-      console.log("Extracting data...");
-      const bals = await page.innerText(bal);
-      const misched = await page.innerText(mische);
-      const povidomd = await page.innerText(povidom);
+      // console.log("Extracting data...");
+      // const bals = await page.innerText(bal);
+      // const misched = await page.innerText(mische);
+      // const povidomd = await page.innerText(povidom);
 
-      const htmlContent = await page.content();
       await browser.close();
-      return { bal: htmlContent, mische: misched, povidom: povidomd };
+      return { bal: htmlContent/*, mische: misched, povidom: povidomd */};
     } catch (error) {
       console.error('Error getting data from the page:', error);
       await browser.close();
