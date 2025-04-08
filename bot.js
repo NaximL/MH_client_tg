@@ -8,7 +8,7 @@ const post = require('./func/post');
 const put = require('./func/put');
 
 
-const API_KEY_BOT = '2056524233:AAGuWmoiRAAIEGVPGdxXqQYCqeS8rR2gxiI'
+const API_KEY_BOT = '7473987432:AAFDw1tZ_45adx4NJuJV2-xNFqnVB39AVvg'
 const DEV = false
 const url = config.url_moyasch
 const url_db = config.url_db
@@ -248,13 +248,7 @@ bot.on('text', async (msg) => {
         const p = users.find(o => o._id === id);
         const f = await parses_bal(url, p.data[0], p.data[1]);
 
-        const htmlContent = f.bal; 
-        const fileOptions = {
-          filename: 'average_score.html',
-          contentType: 'text/html'
-        };
-
-        bot.sendDocument(id, Buffer.from(htmlContent, 'utf-8'), {}, fileOptions);
+        bot.sendMessage(id, `Ваш середній бал на даний момент: ${f.bal}`);
         bot.deleteMessage(id, wait.message_id);
         clearInterval(inter);
       });
