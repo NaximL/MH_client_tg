@@ -1,18 +1,19 @@
-const puppeteer = require('puppeteer-core'); 
+const { chromium } = require('playwright');
 
 const getBrowser = async () => {
   let browser;
   try {
-    browser = await puppeteer.launch({
-      executablePath: '/usr/bin/chromium',
-      headless: true, 
+    console.log("Launching browser...");
+    browser = await chromium.launch({
+      headless: true,
       args: [
-        '--no-sandbox', 
-        '--disable-setuid-sandbox', 
-        '--disable-gpu', 
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-gpu',
         '--remote-debugging-port=9222',
       ],
     });
+    console.log("Browser launched successfully.");
   } catch (err) {
     console.error('Error launching browser:', err);
   }
@@ -26,39 +27,47 @@ const parses_bal = async (url, use, pass) => {
   const page = await browser.newPage();
 
   try {
-    await page.goto(url + "Analitika", { waitUntil: 'networkidle0' });
+    console.log(`Navigating to ${url + "Analitika"}...`);
+    await page.goto(url + "Analitika", { waitUntil: 'load' });
 
-    await page.type('#UserName', use);
-    await page.type('#Password', pass);
+    console.log("Filling login form...");
+    await page.fill('#UserName', use);
+    await page.fill('#Password', pass);
 
+    console.log("Submitting login...");
     await page.click('form button[type="submit"].login-btn-yellow');
-
-    await page.waitForNavigation({ waitUntil: 'networkidle0' });
+    const bal = 'div.c100.center.p100 > span';
+    const mische = 'td[class="big"]';
+    const povidom = 'span[class="badge badge-pill pink"]';
+    console.log("Waiting for navigation...");
+    await page.waitForSelector(bal);
 
     const errorSelector = 'div.alert.alert-danger';
     const errorElement = await page.$(errorSelector);
 
     if (errorElement) {
+      console.log('Login error: alert-danger found');
       await browser.close();
       return false;
     }
 
-    const bal = 'div.c100.center.p100 > span';
-    const mische = 'td[class="big"]';
-    const povidom = 'span[class="badge badge-pill pink"]';
+    
 
     try {
-      await page.waitForSelector(bal, { timeout: 5000 });
-      await page.waitForSelector(mische, { timeout: 5000 });
-      await page.waitForSelector(povidom, { timeout: 5000 });
+      console.log("Waiting for balance element...");
+      await page.waitForSelector(bal, { timeout: 10000 });
+      await page.waitForSelector(mische, { timeout: 10000 });
+      await page.waitForSelector(povidom, { timeout: 10000 });
 
-      const bals = await page.$eval(bal, el => el.textContent.trim());
-      const misched = await page.$eval(mische, el => el.textContent.trim());
-      const povidomd = await page.$eval(povidom, el => el.textContent.trim());
+      console.log("Extracting data...");
+      const bals = await page.innerText(bal);
+      const misched = await page.innerText(mische);
+      const povidomd = await page.innerText(povidom);
 
       await browser.close();
       return { bal: bals, mische: misched, povidom: povidomd };
     } catch (error) {
+      console.error('Error getting data from the page:', error);
       await browser.close();
       return false;
     }
@@ -76,18 +85,22 @@ const parses_lesion = async (url, use, pass) => {
   const page = await browser.newPage();
 
   try {
-    await page.goto(url + "TvarkarascioIrasas/MokinioTvarkarastis", { waitUntil: 'networkidle0' });
+    console.log(`Navigating to ${url + "TvarkarascioIrasas/MokinioTvarkarastis"}...`);
+    await page.goto(url + "TvarkarascioIrasas/MokinioTvarkarastis", { waitUntil: 'load' });
 
-    await page.type('#UserName', use);
-    await page.type('#Password', pass);
+    console.log("Filling login form...");
+    await page.fill('#UserName', use);
+    await page.fill('#Password', pass);
     await page.click('form button[type="submit"].login-btn-yellow');
 
-    await page.waitForNavigation({ waitUntil: 'networkidle0' });
+    console.log("Waiting for navigation...");
+    await page.waitForNavigation({ waitUntil: 'load' });
 
     const errorSelector = 'div.alert.alert-danger';
     const errorElement = await page.$(errorSelector);
 
     if (errorElement) {
+      console.log('Login error: alert-danger found');
       await browser.close();
       return false;
     }
