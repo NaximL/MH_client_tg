@@ -1,11 +1,32 @@
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core'); 
+
+const getBrowser = async () => {
+  let browser;
+  try {
+    browser = await puppeteer.launch({
+      executablePath: '/usr/bin/chromium',
+      headless: true, 
+      args: [
+        '--no-sandbox', 
+        '--disable-setuid-sandbox', 
+        '--disable-gpu', 
+        '--remote-debugging-port=9222',
+      ],
+    });
+  } catch (err) {
+    console.error('Error launching browser:', err);
+  }
+  return browser;
+};
 
 const parses_bal = async (url, use, pass) => {
-  const browser = await puppeteer.launch({ headless: 'new' });
+  const browser = await getBrowser();
+  if (!browser) return false;
+
   const page = await browser.newPage();
 
   try {
-    await page.goto(url+"Analitika", { waitUntil: 'networkidle0' }); 
+    await page.goto(url + "Analitika", { waitUntil: 'networkidle0' });
 
     await page.type('#UserName', use);
     await page.type('#Password', pass);
@@ -23,24 +44,20 @@ const parses_bal = async (url, use, pass) => {
     }
 
     const bal = 'div.c100.center.p100 > span';
-
     const mische = 'td[class="big"]';
+    const povidom = 'span[class="badge badge-pill pink"]';
 
-    const povidom = 'span[class="badge badge-pill pink"]'
     try {
       await page.waitForSelector(bal, { timeout: 5000 });
       await page.waitForSelector(mische, { timeout: 5000 });
       await page.waitForSelector(povidom, { timeout: 5000 });
 
-
       const bals = await page.$eval(bal, el => el.textContent.trim());
       const misched = await page.$eval(mische, el => el.textContent.trim());
       const povidomd = await page.$eval(povidom, el => el.textContent.trim());
 
-      
-      
       await browser.close();
-      return {bal:bals,mische:misched, povidom:povidomd};
+      return { bal: bals, mische: misched, povidom: povidomd };
     } catch (error) {
       await browser.close();
       return false;
@@ -52,11 +69,10 @@ const parses_bal = async (url, use, pass) => {
   }
 };
 
-
-
-
 const parses_lesion = async (url, use, pass) => {
-  const browser = await puppeteer.launch({ headless: 'new' });
+  const browser = await getBrowser();
+  if (!browser) return false;
+
   const page = await browser.newPage();
 
   try {
@@ -74,14 +90,16 @@ const parses_lesion = async (url, use, pass) => {
     if (errorElement) {
       await browser.close();
       return false;
-    }const data = await page.evaluate(() => {
+    }
+
+    const data = await page.evaluate(() => {
       const tbodies = document.querySelectorAll('tbody.bg-white');
       const results = [];
-    
+
       tbodies.forEach(tbody => {
         const rows = tbody.querySelectorAll('tr');
-        const ef = []; 
-    
+        const ef = [];
+
         rows.forEach(row => {
           const cells = row.querySelectorAll('td');
           if (cells.length >= 5) {
@@ -90,10 +108,10 @@ const parses_lesion = async (url, use, pass) => {
             ef.push({ urok, time });
           }
         });
-    
-        results.push(ef); 
+
+        results.push(ef);
       });
-    
+
       return JSON.stringify(results);
     });
 
@@ -106,4 +124,4 @@ const parses_lesion = async (url, use, pass) => {
   }
 };
 
-module.exports = {parses_bal,parses_lesion};
+module.exports = { parses_bal, parses_lesion };
