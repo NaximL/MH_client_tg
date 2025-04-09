@@ -8,7 +8,7 @@ const post = require('./func/post');
 const put = require('./func/put');
 
 
-const API_KEY_BOT = '7473987432:AAFDw1tZ_45adx4NJuJV2-xNFqnVB39AVvg'
+const API_KEY_BOT = ""
 const DEV = false
 const url = config.url_moyasch
 const url_db = config.url_db
