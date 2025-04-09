@@ -1,73 +1,47 @@
-const { chromium } = require('playwright');
-
-const getBrowser = async () => {
-  let browser;
-  try {
-    console.log("Launching browser...");
-    browser = await chromium.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-gpu',
-        '--remote-debugging-port=9222',
-      ],
-    });
-    console.log("Browser launched successfully.");
-  } catch (err) {
-    console.error('Error launching browser:', err);
-  }
-  return browser;
-};
+const puppeteer = require('puppeteer');
 
 const parses_bal = async (url, use, pass) => {
-  const browser = await getBrowser();
-  if (!browser) return false;
-
+  const browser = await puppeteer.launch({ headless: 'new' });
   const page = await browser.newPage();
 
   try {
-    console.log(`Navigating to ${url + "Analitika"}...`);
-    await page.goto(url + "Analitika", { waitUntil: 'load' });
+    await page.goto(url+"Analitika", { waitUntil: 'networkidle0' }); 
 
-    console.log("Filling login form...");
-    await page.fill('#UserName', use);
-    await page.fill('#Password', pass);
+    await page.type('#UserName', use);
+    await page.type('#Password', pass);
 
-    console.log("Submitting login...");
     await page.click('form button[type="submit"].login-btn-yellow');
-    const bal = 'div.c100.center.p100 > span';
-    const mische = 'td[class="big"]';
-    const povidom = 'span[class="badge badge-pill pink"]';
-    console.log("Waiting for navigation...");
-    await page.waitForSelector(bal);
+
+    await page.waitForNavigation({ waitUntil: 'networkidle0' });
 
     const errorSelector = 'div.alert.alert-danger';
     const errorElement = await page.$(errorSelector);
 
     if (errorElement) {
-      console.log('Login error: alert-danger found');
       await browser.close();
       return false;
     }
 
-    
+    const bal = 'div.c100.center.p100 > span';
 
+    const mische = 'td[class="big"]';
+
+    const povidom = 'span[class="badge badge-pill pink"]'
     try {
-      console.log("Waiting for balance element...");
-      await page.waitForSelector(bal, { timeout: 10000 });
-      await page.waitForSelector(mische, { timeout: 10000 });
-      await page.waitForSelector(povidom, { timeout: 10000 });
+      await page.waitForSelector(bal, { timeout: 5000 });
+      await page.waitForSelector(mische, { timeout: 5000 });
+      await page.waitForSelector(povidom, { timeout: 5000 });
 
-      console.log("Extracting data...");
-      const bals = await page.innerText(bal);
-      const misched = await page.innerText(mische);
-      const povidomd = await page.innerText(povidom);
 
+      const bals = await page.$eval(bal, el => el.textContent.trim());
+      const misched = await page.$eval(mische, el => el.textContent.trim());
+      const povidomd = await page.$eval(povidom, el => el.textContent.trim());
+
+      
+      
       await browser.close();
-      return { bal: bals, mische: misched, povidom: povidomd };
+      return {bal:bals,mische:misched, povidom:povidomd};
     } catch (error) {
-      console.error('Error getting data from the page:', error);
       await browser.close();
       return false;
     }
@@ -78,42 +52,36 @@ const parses_bal = async (url, use, pass) => {
   }
 };
 
-const parses_lesion = async (url, use, pass) => {
-  const browser = await getBrowser();
-  if (!browser) return false;
 
+
+
+const parses_lesion = async (url, use, pass) => {
+  const browser = await puppeteer.launch({ headless: 'new' });
   const page = await browser.newPage();
 
   try {
-    console.log(`Navigating to ${url + "TvarkarascioIrasas/MokinioTvarkarastis"}...`);
-    await page.goto(url + "TvarkarascioIrasas/MokinioTvarkarastis", { waitUntil: 'load' });
+    await page.goto(url + "TvarkarascioIrasas/MokinioTvarkarastis", { waitUntil: 'networkidle0' });
 
-    console.log("Filling login form...");
-    await page.fill('#UserName', use);
-    await page.fill('#Password', pass);
+    await page.type('#UserName', use);
+    await page.type('#Password', pass);
     await page.click('form button[type="submit"].login-btn-yellow');
 
-    console.log("Waiting for navigation...");
-    await page.waitForNavigation({ waitUntil: 'load' });
+    await page.waitForNavigation({ waitUntil: 'networkidle0' });
 
     const errorSelector = 'div.alert.alert-danger';
     const errorElement = await page.$(errorSelector);
 
     if (errorElement) {
-      console.log('Login error: alert-danger found');
       await browser.close();
       return false;
-    }
-    const htmlContent = await page.content();
-
-    const data = await page.evaluate(() => {
+    }const data = await page.evaluate(() => {
       const tbodies = document.querySelectorAll('tbody.bg-white');
       const results = [];
-
+    
       tbodies.forEach(tbody => {
         const rows = tbody.querySelectorAll('tr');
-        const ef = [];
-
+        const ef = []; 
+    
         rows.forEach(row => {
           const cells = row.querySelectorAll('td');
           if (cells.length >= 5) {
@@ -122,8 +90,8 @@ const parses_lesion = async (url, use, pass) => {
             ef.push({ urok, time });
           }
         });
-
-        results.push(ef);
+    
+        results.push(ef); 
       });
     
       return JSON.stringify(results);
@@ -138,4 +106,4 @@ const parses_lesion = async (url, use, pass) => {
   }
 };
 
-module.exports = { parses_bal, parses_lesion };
+module.exports = {parses_bal,parses_lesion};
