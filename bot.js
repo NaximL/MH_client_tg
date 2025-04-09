@@ -84,6 +84,7 @@ const menu = async (id,msg_2) =>{
     }
 })
 }
+
  
 
 
@@ -192,6 +193,7 @@ bot.on('text', async (msg) => {
           bot.sendMessage(id, "Привіт! Введіть свій логін і пароль від 'Моя школа'.");
           await sleep(100);
           bot.sendMessage(id, "Спочатку надішліть логін, а потім — наступним повідомленням пароль.");
+          bot.sendMessage(id, "Це тестовий телеграм клієнт МШ");
 
           let use = {
             _id: id,
